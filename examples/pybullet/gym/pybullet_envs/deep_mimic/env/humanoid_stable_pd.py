@@ -704,18 +704,19 @@ class HumanoidStablePD(object):
     #check if any non-allowed body part hits the ground
     terminates = False
     pts = self._pybullet_client.getContactPoints()
-    for p in pts:
-      part = -1
-      #ignore self-collision
-      if (p[1] == p[2]):
-        continue
-      if (p[1] == self._sim_model):
-        part = p[3]
-      if (p[2] == self._sim_model):
-        part = p[4]
-      if (part >= 0 and part in self._fall_contact_body_parts):
-        #print("terminating part:", part)
-        terminates = True
+    if pts is not None:
+      for p in pts:
+        part = -1
+        #ignore self-collision
+        if (p[1] == p[2]):
+          continue
+        if (p[1] == self._sim_model):
+          part = p[3]
+        if (p[2] == self._sim_model):
+          part = p[4]
+        if (part >= 0 and part in self._fall_contact_body_parts):
+          #print("terminating part:", part)
+          terminates = True
 
     return terminates
 
