@@ -2,6 +2,7 @@ import numpy as np
 import copy as copy
 try:
   import tensorflow.compat.v1 as tf
+  tf.disable_v2_behavior()
 except Exception:
   import tensorflow as tf
 

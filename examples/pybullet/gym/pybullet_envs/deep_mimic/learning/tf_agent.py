@@ -1,6 +1,7 @@
 import numpy as np
 try:
   import tensorflow.compat.v1 as tf
+  tf.disable_v2_behavior()
 except Exception:
   import tensorflow as tf
 from abc import abstractmethod

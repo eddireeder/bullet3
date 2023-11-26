@@ -2,6 +2,7 @@ import numpy as np
 import copy
 try:
   import tensorflow.compat.v1 as tf
+  tf.disable_v2_behavior()
 except Exception:
   import tensorflow as tf
 from pybullet_envs.deep_mimic.learning.normalizer import Normalizer
