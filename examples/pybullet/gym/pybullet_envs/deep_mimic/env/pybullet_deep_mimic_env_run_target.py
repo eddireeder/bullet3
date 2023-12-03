@@ -23,7 +23,8 @@ class PyBulletDeepMimicEnvRunTarget(Env):
   def __init__(self, arg_parser=None, enable_draw=False, pybullet_client=None,
                time_step=1./240,
                init_strategy=InitializationStrategy.RANDOM,
-               target_duration=7):
+               target_min_duration=3,
+               target_max_duration=5):
     super().__init__(arg_parser, enable_draw)
     self._num_agents = 1
     self._pybullet_client = pybullet_client
@@ -32,7 +33,9 @@ class PyBulletDeepMimicEnvRunTarget(Env):
     self._arg_parser = arg_parser
     self.timeStep = time_step
     self._init_strategy = init_strategy
-    self._target_duration = target_duration
+    self._target_min_duration = target_min_duration
+    self._target_max_duration = target_max_duration
+    self._target_duration = target_min_duration
     print("Initialization strategy: {:s}".format(init_strategy))
     self.reset()
 
@@ -116,8 +119,12 @@ class PyBulletDeepMimicEnvRunTarget(Env):
     self._humanoid.resetPose()
     self.needs_update_time = self.t - 1  #force update
 
+    # Reset target direction
+    self.reset_target()
+
     # Reset number of direction changes
     self.target_i = self.calculate_target_i()
+
 
   def get_num_agents(self):
     return self._num_agents
@@ -138,11 +145,13 @@ class PyBulletDeepMimicEnvRunTarget(Env):
     return self.get_reward_max(agent_id)
   
   def calculate_target_i(self):
-    return self.t % self._target_duration
+    return self.t // self._target_duration
   
   def reset_target(self):
-    #todo: randomise direction in whatever form we need it (quaternion? euler? direciton vector?)
-    self.target_direction = [1, 1, 0]
+    angle = random.uniform(0, 2.0*math.pi)
+    speed = 1
+    self.target_direction = [speed * math.cos(angle), 0, speed * math.sin(angle)]
+    self.target_duration = random.uniform(self._target_min_duration, self._target_max_duration)
 
   #scene_name == "imitate" -> cDrawSceneImitate
   def get_state_size(self, agent_id):
@@ -297,7 +306,10 @@ class PyBulletDeepMimicEnvRunTarget(Env):
   
 
   def update_target_indicator(self):
-    self._pybullet_client.resetBasePositionAndOrientation(self._target_multi_body, posObj=[1, 1, 1], ornObj=[0, 0, 0, 1])
+    if self._humanoid.com_sim is not None:
+        new_pos = np.array(self._humanoid.com_sim) + (np.array(self.target_direction) * 2)
+        new_pos[1] = 0  # Keep indicator on the ground
+        self._pybullet_client.resetBasePositionAndOrientation(self._target_multi_body, posObj=new_pos, ornObj=[0, 0, 0, 1])
 
 
   def update(self, timeStep):
