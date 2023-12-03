@@ -34,7 +34,7 @@ def update_world(world, time_elapsed):
   #print("reward=",reward)
   #print("steps=",steps)
   end_episode = world.env.is_episode_end()
-  if (end_episode or steps>= 1000):
+  if (end_episode or steps>= 2000):
     print("total_reward=",total_reward)
     total_reward=0
     steps = 0
